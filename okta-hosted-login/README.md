@@ -59,3 +59,13 @@ You can login with the same account that you created when signing up for your De
 [Okta Spring Boot Library]: https://github.com/okta/okta-spring-boot
 [OIDC Web Application Setup Instructions]: https://developer.okta.com/authentication-guide/implementing-authentication/auth-code#1-setting-up-your-application
 [Authorization Code Flow]: https://developer.okta.com/authentication-guide/implementing-authentication/auth-code
+
+## Setup Okta Initated Login
+
+In your Okta Application, from the **General** tab edit the **General Settings** section:
+* `Grant Type` select `implicit`
+* `Login initiated by` select `Either Okta or App`
+* `Application visibility` select `Display application icon to users`
+* `Login flow` select `Redirect to app to initiate login (OIDC Compliant)`
+* `Initiate login URI` set `http://localhost:8080/oidc/compliant`
+

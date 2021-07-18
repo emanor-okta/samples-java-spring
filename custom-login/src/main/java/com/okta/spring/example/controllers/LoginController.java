@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Cookie;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -42,10 +45,32 @@ public class LoginController {
         this.oktaOAuth2Properties = oktaOAuth2Properties;
     }
 
+    @GetMapping(value = "/oidc/compliant")
+    public ModelAndView oktaInitiatedCallback(HttpServletRequest request, HttpServletResponse response) throws MalformedURLException {
+        Cookie cookie = new Cookie("fromLogin", "true");
+        cookie.setMaxAge(5);       // 5 second
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        return new ModelAndView("redirect:" + request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() +
+            request.getContextPath() + "/oauth2/authorization/okta");
+    }
+
     @GetMapping(value = "/custom-login")
     public ModelAndView login(HttpServletRequest request,
                               @RequestParam(name = "state", required = false) String state,
                               @RequestParam(name = "nonce") String nonce) throws MalformedURLException {
+
+        for (Cookie c : request.getCookies()) {
+            if (c.getName().equalsIgnoreCase("fromLogin") && c.getValue().equalsIgnoreCase("true")) {
+                return new ModelAndView("redirect:" + oktaOAuth2Properties.getIssuer() +
+                        "/v1/authorize?response_type=code&client_id=" + oktaOAuth2Properties.getClientId() +
+                        "&scope=" + (oktaOAuth2Properties.getScopes().stream().reduce((scope, scopes) -> scope + " " + scopes)).get() +
+                        "&state=" + state +
+                        "&redirect_uri=" + request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() +
+                            request.getContextPath() + oktaOAuth2Properties.getRedirectUri() +
+                        "&nonce=" + nonce);
+            }
+        }
 
         // if we don't have the state parameter redirect
         if (state == null) {

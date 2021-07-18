@@ -14,6 +14,11 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Collections;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.net.MalformedURLException;
+
 @SpringBootApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class CodeFlowExampleApplication {
@@ -32,7 +37,7 @@ public class CodeFlowExampleApplication {
         protected void configure(HttpSecurity http) throws Exception {
             http.authorizeRequests()
                     // allow antonymous access to the root page
-                    .antMatchers("/").permitAll()
+                    .antMatchers("/", "/oidc/compliant").permitAll()
                     // all other requests
                     .anyRequest().authenticated()
 
@@ -62,5 +67,11 @@ public class CodeFlowExampleApplication {
         public ModelAndView userDetails(OAuth2AuthenticationToken authentication) {
             return new ModelAndView("userProfile" , Collections.singletonMap("details", authentication.getPrincipal().getAttributes()));
         }
+
+        @GetMapping(value = "/oidc/compliant")
+        public ModelAndView oktaInitiatedCallback(HttpServletRequest request, HttpServletResponse response) throws MalformedURLException {
+            return new ModelAndView("redirect:" + request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() +
+                request.getContextPath() + "/oauth2/authorization/okta");
+        } 
     }
 }

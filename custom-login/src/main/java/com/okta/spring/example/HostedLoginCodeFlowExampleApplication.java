@@ -61,7 +61,7 @@ public class HostedLoginCodeFlowExampleApplication {
                         .accessDeniedHandler((req, res, e) -> res.sendRedirect("/403"))
 
                 .and().authorizeRequests()
-                        .antMatchers(HttpMethod.GET,"/", "/custom-login", "/css/**").permitAll()
+                        .antMatchers(HttpMethod.GET,"/", "/custom-login", "/oidc/compliant", "/css/**").permitAll()
                         .anyRequest().authenticated()
 
                  // send the user back to the root page when they logout
